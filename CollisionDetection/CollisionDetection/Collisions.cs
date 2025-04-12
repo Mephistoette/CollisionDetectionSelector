@@ -187,5 +187,30 @@ namespace CollisionDetectionSelector
                 a.Min.Y <= b.Max.Y && a.Max.X >= b.Min.Y &&
                 a.Min.Z <= b.Max.Z && a.Max.Z >= b.Min.Z;
         }
+
+
+        // TODO: Provide implementation for this
+        public static bool Intersects(AABB aabb, Plane plane)
+        {
+
+            // Convert AABB to center-extents representation
+            Point c = aabb.Center; // Compute AABB center
+            Vector3 e = aabb.Extents; // Compute positive extents
+
+            // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+            float r = e[0] * Math.Abs(plane.Normal.X) + e[1] * Math.Abs(plane.Normal.Y) + e[2] * Math.Abs(plane.Normal.Z);
+
+            // Compute distance of box center from plane
+            float s = Vector3.Dot(plane.Normal,c.Position) - plane.Distance;
+
+            // Intersection occurs when distance s falls within [-r,+r] interval
+            return Math.Abs(s) <= r;
+        }
+
+        // Conveniance function
+        public static bool Intersects(Plane plane, AABB aabb)
+        {
+            return Intersects(aabb, plane);
+        }
     }
 }
