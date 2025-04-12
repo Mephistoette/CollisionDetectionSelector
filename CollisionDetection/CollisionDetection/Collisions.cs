@@ -142,5 +142,12 @@ namespace CollisionDetectionSelector
             Vector3 res = r.Normal*t+ r.Position.Position;
             return new Point(res);  
         }
+
+         
+        public static bool Intersects(Sphere s1, Sphere s2)
+        {
+            Vector3 difference = s1.Position.Position - s2.Position.Position;
+            return difference.LengthSquared() <= (s1.Radius + s2.Radius) * (s1.Radius + s2.Radius);
+        }
     }
 }
