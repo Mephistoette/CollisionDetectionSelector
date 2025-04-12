@@ -89,5 +89,22 @@ namespace CollisionDetectionSelector
             return new Point(detAX/detA,detAY/detA,detAZ/detA);
 
         }
+
+        public static bool PointOnLine(Point point, Line line)
+        {
+            float dx = line.end.X - line.start.X;
+            if (Math.Abs(dx) < 0.00001f)
+            {
+                return Math.Abs(point.X - line.start.X) < 0.00001f &&
+                       Math.Abs(point.Y - line.start.Y) < 0.00001f &&
+                       Math.Abs(point.Z - line.start.Z) < 0.00001f;
+            }
+
+            float mY = (line.end.Y - line.start.Y) / dx;
+            float mZ = (line.end.Z - line.start.Z) / dx;
+
+            return Math.Abs(point.Y - line.start.Y - mY * (point.X - line.start.X)) < 0.00001f &&
+                   Math.Abs(point.Z - line.start.Z - mZ * (point.X - line.start.X)) < 0.00001f;
+        }
     }
 }
