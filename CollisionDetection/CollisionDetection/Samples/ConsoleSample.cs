@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CollisionDetection.Samples
+namespace CollisionDetectionSelector.Samples
 {
     class ConsoleSample : Application
     {
