@@ -212,5 +212,12 @@ namespace CollisionDetectionSelector
         {
             return Intersects(aabb, plane);
         }
+
+        public static bool Intersects(Plane p1, Plane p2)
+        {
+            Vector3 d = Vector3.Cross(p1.Normal, p2.Normal);
+
+            return Vector3.Dot(d, d) > 0.00001f;
+        }
     }
 }
