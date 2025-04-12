@@ -30,5 +30,19 @@ namespace CollisionDetectionSelector
             Vector3 sphPos =  new Vector3(sphere.Position.X, sphere.Position.Y, sphere.Position.Z);
             return new Point(direction.X * sphere.Radius+ sphPos.X, direction.Y * sphere.Radius+ sphPos.Y, direction.Z * sphere.Radius + sphPos.Z);
         }
+
+        public static bool PointInAABB(AABB aabb, Point point)
+        {
+            return point.X>aabb.Min.X&&point.Y>aabb.Min.Y&&point.Z>aabb.Min.Z&&
+                point.X<aabb.Max.X&&point.Y<aabb.Max.Y&&point.Z<aabb.Max.Z;
+        }
+
+        public static Point ClosestPoint(AABB aabb, Point point)
+        {
+            float x = Math.Clamp(point.X,aabb.Min.X,aabb.Max.X);
+            float y = Math.Clamp(point.Y,aabb.Min.Y,aabb.Max.Y);
+            float z = Math.Clamp(point.Z,aabb.Min.Z,aabb.Max.Z);
+            return new Point(x,y,z);
+        }
     }
 }
