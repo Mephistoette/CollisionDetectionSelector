@@ -44,5 +44,50 @@ namespace CollisionDetectionSelector
             float z = Math.Clamp(point.Z,aabb.Min.Z,aabb.Max.Z);
             return new Point(x,y,z);
         }
+
+        public static bool PointOnPlane(Point point, Plane plane)   // Should return a positive number, a negative number or 0
+        {
+            return Math.Abs(Vector3.Dot(point.Position, plane.Normal) - plane.Distance) < 0.00001f;
+        }
+        public static float DistanceFromPlane(Point point, Plane plane)
+        {
+            return Vector3.Dot(point.Position, plane.Normal) - plane.Distance;
+        }
+
+        public static Point ClosestPoint(Plane plane, Point point)
+        {
+            Vector3 closestVector =  Vector3.Projection(point.Position, plane.Normal) - plane.Normal * plane.Distance;
+            return new Point(closestVector.X,closestVector.Y,closestVector.Z);
+        }
+
+        public static Point Intersection(Plane p1, Plane p2, Plane p3) //Cramer's Rule
+        {
+            float[] array = { p1.Normal.X,p1.Normal.Y,p1.Normal.Z,
+            p2.Normal.X,p2.Normal.Y,p2.Normal.Z,
+            p3.Normal.X,p3.Normal.Y,p3.Normal.Z};
+            Matrix3 coA = new Matrix3(array);
+            float detA = Matrix3.Determinant(coA);
+
+            float[] arrayX = { p1.Distance,p1.Normal.Y,p1.Normal.Z,
+            p2.Distance,p2.Normal.Y,p2.Normal.Z,
+            p3.Distance,p3.Normal.Y,p3.Normal.Z};
+            Matrix3 coAX = new Matrix3(arrayX);
+            float detAX = Matrix3.Determinant(coAX);
+
+            float[] arrayY = { p1.Normal.X,p1.Distance,p1.Normal.Z,
+            p2.Normal.X,p2.Distance,p2.Normal.Z,
+            p3.Normal.X,p3.Distance,p3.Normal.Z};
+            Matrix3 coAY = new Matrix3(arrayY);
+            float detAY = Matrix3.Determinant(coAY);
+
+            float[] arrayZ = { p1.Normal.X,p1.Normal.Y,p1.Distance,
+            p2.Normal.X,p2.Normal.Y,p2.Distance,
+            p3.Normal.X,p3.Normal.Y,p3.Distance};
+            Matrix3 coAZ = new Matrix3(arrayZ);
+            float detAZ = Matrix3.Determinant(coAZ);
+
+            return new Point(detAX/detA,detAY/detA,detAZ/detA);
+
+        }
     }
 }
