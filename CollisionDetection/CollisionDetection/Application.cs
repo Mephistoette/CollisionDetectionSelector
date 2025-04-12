@@ -112,7 +112,7 @@ public class Application
 
     private void OpenTKInitialize(object sender, EventArgs e)
     {
-        Console.Clear();
+        //Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine("OpenGL Vendor: " + GL.GetString(StringName.Vendor));
         Console.WriteLine("OpenGL Renderer: " + GL.GetString(StringName.Renderer));
