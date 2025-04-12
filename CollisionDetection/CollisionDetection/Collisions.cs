@@ -106,5 +106,21 @@ namespace CollisionDetectionSelector
             return Math.Abs(point.Y - line.start.Y - mY * (point.X - line.start.X)) < 0.00001f &&
                    Math.Abs(point.Z - line.start.Z - mZ * (point.X - line.start.X)) < 0.00001f;
         }
+
+        public static Point ClosestPoint(Line ab, Point c, out float t)
+        {
+            t = Vector3.Dot(c.Position - ab.start.Position, ab.end.Position - ab.start.Position);
+            t /= Vector3.Dot(ab.end.Position - ab.start.Position, ab.end.Position - ab.start.Position);
+
+            t = Math.Clamp(t, 0.0f, 1.0f);
+            Vector3 dir = (ab.end.Position - ab.start.Position) * t;
+            Vector3 res = dir + ab.start.Position;
+            return new Point(res);
+        }
+        public static Point ClosestPoint(Line ab, Point c)
+        {
+            float t = 0;
+            return ClosestPoint(ab, c,out t);
+        }
     }
 }
