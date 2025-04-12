@@ -122,5 +122,25 @@ namespace CollisionDetectionSelector
             float t = 0;
             return ClosestPoint(ab, c,out t);
         }
+
+        public static bool PointOnRay(Point point, Ray ray)
+        {
+            Vector3 newNorm = point.Position - ray.Position.Position;
+            newNorm.Normalize();
+            if (point.X == ray.Position.X && point.Y == ray.Position.Y && point.Z == ray.Position.Z)
+            {
+                return true;
+            }
+            float t = Vector3.Dot(newNorm, ray.Normal);
+            return Math.Abs(1f - t) < 0.00001f;
+        }
+
+        public static Point ClosestPoint(Ray r, Point c)
+        {
+            float t = Vector3.Dot(r.Normal, c.Position-r.Position.Position)/Vector3.Dot(r.Normal,r.Normal);
+            t = Math.Max(t, 0.0f);
+            Vector3 res = r.Normal*t+ r.Position.Position;
+            return new Point(res);  
+        }
     }
 }
