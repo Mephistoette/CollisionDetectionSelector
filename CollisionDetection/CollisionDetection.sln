@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CollisionDetection", "CollisionDetection\CollisionDetection.csproj", "{6FED58AE-CC64-4E9B-BFEB-8740A1A92EDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6FED58AE-CC64-4E9B-BFEB-8740A1A92EDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FED58AE-CC64-4E9B-BFEB-8740A1A92EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FED58AE-CC64-4E9B-BFEB-8740A1A92EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FED58AE-CC64-4E9B-BFEB-8740A1A92EDE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D85F3E92-9425-46DB-B041-F3C8054534E8}
+	EndGlobalSection
+EndGlobal
