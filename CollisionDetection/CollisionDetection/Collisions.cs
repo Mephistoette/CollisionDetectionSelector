@@ -14,7 +14,7 @@ namespace CollisionDetectionSelector
         {
             // TODO
             float x = sphere.Position.X - point.Position.X;
-            float y = sphere.Position.Y - point.Position.Y; 
+            float y = sphere.Position.Y - point.Position.Y;
             float z = sphere.Position.Z - point.Position.Z;
             Vector3 differece = new Vector3(x, y, z);
             return differece.LengthSquared() < sphere.Radius * sphere.Radius;
@@ -27,22 +27,22 @@ namespace CollisionDetectionSelector
             float z = sphere.Position.Z - point.Position.Z;
             Vector3 direction = new Vector3(-x, -y, -z);
             direction.Normalize();
-            Vector3 sphPos =  new Vector3(sphere.Position.X, sphere.Position.Y, sphere.Position.Z);
-            return new Point(direction.X * sphere.Radius+ sphPos.X, direction.Y * sphere.Radius+ sphPos.Y, direction.Z * sphere.Radius + sphPos.Z);
+            Vector3 sphPos = new Vector3(sphere.Position.X, sphere.Position.Y, sphere.Position.Z);
+            return new Point(direction.X * sphere.Radius + sphPos.X, direction.Y * sphere.Radius + sphPos.Y, direction.Z * sphere.Radius + sphPos.Z);
         }
 
         public static bool PointInAABB(AABB aabb, Point point)
         {
-            return point.X>aabb.Min.X&&point.Y>aabb.Min.Y&&point.Z>aabb.Min.Z&&
-                point.X<aabb.Max.X&&point.Y<aabb.Max.Y&&point.Z<aabb.Max.Z;
+            return point.X > aabb.Min.X && point.Y > aabb.Min.Y && point.Z > aabb.Min.Z &&
+                point.X < aabb.Max.X && point.Y < aabb.Max.Y && point.Z < aabb.Max.Z;
         }
 
         public static Point ClosestPoint(AABB aabb, Point point)
         {
-            float x = Math.Clamp(point.X,aabb.Min.X,aabb.Max.X);
-            float y = Math.Clamp(point.Y,aabb.Min.Y,aabb.Max.Y);
-            float z = Math.Clamp(point.Z,aabb.Min.Z,aabb.Max.Z);
-            return new Point(x,y,z);
+            float x = Math.Clamp(point.X, aabb.Min.X, aabb.Max.X);
+            float y = Math.Clamp(point.Y, aabb.Min.Y, aabb.Max.Y);
+            float z = Math.Clamp(point.Z, aabb.Min.Z, aabb.Max.Z);
+            return new Point(x, y, z);
         }
 
         public static bool PointOnPlane(Point point, Plane plane)   // Should return a positive number, a negative number or 0
@@ -59,7 +59,7 @@ namespace CollisionDetectionSelector
             float distance = Vector3.Dot(plane.Normal, point.Position) - plane.Distance;
             // If the plane normal wasn't normalized, we'd need this:
             // distance = distance / DOT(plane.Normal, plane.Normal);
-            Vector3 res = point.Position - plane.Normal* distance;
+            Vector3 res = point.Position - plane.Normal * distance;
             return new Point(res);
         }
 
@@ -89,7 +89,7 @@ namespace CollisionDetectionSelector
             Matrix3 coAZ = new Matrix3(arrayZ);
             float detAZ = Matrix3.Determinant(coAZ);
 
-            return new Point(detAX/detA,detAY/detA,detAZ/detA);
+            return new Point(detAX / detA, detAY / detA, detAZ / detA);
 
         }
 
@@ -123,7 +123,7 @@ namespace CollisionDetectionSelector
         public static Point ClosestPoint(Line ab, Point c)
         {
             float t = 0;
-            return ClosestPoint(ab, c,out t);
+            return ClosestPoint(ab, c, out t);
         }
 
         public static bool PointOnRay(Point point, Ray ray)
@@ -140,13 +140,13 @@ namespace CollisionDetectionSelector
 
         public static Point ClosestPoint(Ray r, Point c)
         {
-            float t = Vector3.Dot(r.Normal, c.Position-r.Position.Position)/Vector3.Dot(r.Normal,r.Normal);
+            float t = Vector3.Dot(r.Normal, c.Position - r.Position.Position) / Vector3.Dot(r.Normal, r.Normal);
             t = Math.Max(t, 0.0f);
-            Vector3 res = r.Normal*t+ r.Position.Position;
-            return new Point(res);  
+            Vector3 res = r.Normal * t + r.Position.Position;
+            return new Point(res);
         }
 
-         
+
         public static bool Intersects(Sphere s1, Sphere s2)
         {
             Vector3 difference = s1.Position.Position - s2.Position.Position;
@@ -179,6 +179,13 @@ namespace CollisionDetectionSelector
         public static bool Intersects(Plane plane, Sphere sphere)
         {
             return Intersects(sphere, plane);
+        }
+
+        public static bool Intersects(AABB a, AABB b)
+        {
+            return a.Min.X <= b.Max.X && a.Max.X >= b.Min.X &&
+                a.Min.Y <= b.Max.Y && a.Max.X >= b.Min.Y &&
+                a.Min.Z <= b.Max.Z && a.Max.Z >= b.Min.Z;
         }
     }
 }
