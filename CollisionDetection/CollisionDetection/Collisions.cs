@@ -56,8 +56,11 @@ namespace CollisionDetectionSelector
 
         public static Point ClosestPoint(Plane plane, Point point)
         {
-            Vector3 closestVector =  Vector3.Projection(point.Position, plane.Normal) - plane.Normal * plane.Distance;
-            return new Point(closestVector.X,closestVector.Y,closestVector.Z);
+            float distance = Vector3.Dot(plane.Normal, point.Position) - plane.Distance;
+            // If the plane normal wasn't normalized, we'd need this:
+            // distance = distance / DOT(plane.Normal, plane.Normal);
+            Vector3 res = point.Position - plane.Normal* distance;
+            return new Point(res);
         }
 
         public static Point Intersection(Plane p1, Plane p2, Plane p3) //Cramer's Rule
@@ -148,6 +151,34 @@ namespace CollisionDetectionSelector
         {
             Vector3 difference = s1.Position.Position - s2.Position.Position;
             return difference.LengthSquared() <= (s1.Radius + s2.Radius) * (s1.Radius + s2.Radius);
+        }
+
+        // TODO: Implement this
+        public static bool Intersects(Sphere sphere, AABB aabb)
+        {
+            Point closestPoint = ClosestPoint(aabb, sphere.Position);
+            Vector3 difference = closestPoint.Position - sphere.Position.Position;
+            return difference.LengthSquared() <= sphere.Radius * sphere.Radius;
+        }
+
+        // Just a conveniance function, so argument order wont matter!
+        public static bool Intersects(AABB aabb, Sphere sphere)
+        {
+            return Intersects(sphere, aabb);
+        }
+
+        // TODO: Provide implementation
+        public static bool Intersects(Sphere sphere, Plane plane)
+        {
+            Point closestPoint = ClosestPoint(plane, sphere.Position);
+            Vector3 difference = closestPoint.Position - sphere.Position.Position;
+            return difference.LengthSquared() <= sphere.Radius * sphere.Radius;
+        }
+
+        // Conveniance function
+        public static bool Intersects(Plane plane, Sphere sphere)
+        {
+            return Intersects(sphere, plane);
         }
     }
 }
