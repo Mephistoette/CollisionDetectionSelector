@@ -2,6 +2,7 @@
 using OpenTK;
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
+using CollisionDetectionSelector.Primitives;
 
 // Lives in global namespace
 public class Application
@@ -126,7 +127,7 @@ public class Application
     #region OpenTK Callbacks
     protected void OpenTKInitialize(object sender, EventArgs e)
     {
-        Console.Clear();
+        //Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine("OpenGL Vendor: " + GL.GetString(StringName.Vendor));
         Console.WriteLine("OpenGL Renderer: " + GL.GetString(StringName.Renderer));
@@ -159,4 +160,6 @@ public class Application
         Instance.Resize(Instance.Window.Width, Instance.Window.Height);
     }
     #endregion
+
+
 }

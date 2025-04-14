@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CollisionDetectionSelector.Primitives;
+using System.ComponentModel.Design;
+using OpenTK.Graphics.OpenGL;
 
 namespace CollisionDetectionSelector
 {
@@ -218,6 +220,155 @@ namespace CollisionDetectionSelector
             Vector3 d = Vector3.Cross(p1.Normal, p2.Normal);
 
             return Vector3.Dot(d, d) > 0.00001f;
+        }
+
+        // TODO: Implement this function
+        public static bool Raycast(Ray ray, Sphere sphere, out float t)
+        {
+            Vector3 p0 = ray.Position.Position;
+            Vector3 d = ray.Normal;
+            Vector3 c = sphere.Position.Position;
+            float r = sphere.Radius;
+
+            Vector3 e = c - p0;
+            // Using Length here would cause floating point error to creep in
+            float Esq = Vector3.LengthSquared(e);
+            float a = Vector3.Dot(e, d);
+            float b = (float)Math.Sqrt(Esq - (a * a));
+            float f = (float)Math.Sqrt((r * r) - (b * b));
+
+            // No collision
+            if (r * r - Esq + a * a < 0f)
+            {
+                t = -1;
+                return false;// -1 is invalid.
+            }
+            // Ray is inside
+            else if (Esq < r * r)
+            {
+                t = a + f;
+                return true;// Just reverse direction
+            }
+            // else Normal intersection
+            t = a - f;
+            return true;
+        }
+
+        // I've implemented these for you!
+
+        // Conveniance method, returns t without an out param
+        // If no collision happened, will return -1
+        public static float Raycast(Ray ray, Sphere sphere)
+        {
+            float t = -1;
+            if (!Raycast(ray, sphere, out t))
+            {
+                return -1;
+            }
+            return t;
+        }
+
+        // Conveniance method, returns the point of intersection
+        // instead of p
+        public static bool Raycast(Ray ray, Sphere sphere, out Point p)
+        {
+            float t = -1;
+            bool result = Raycast(ray, sphere, out t);
+            p = new Point(ray.Position.ToVector() + ray.Normal * t);
+            return result;
+        }
+
+        // TODO: Implement ONLY THIS ONE method:
+        public static bool Raycast(Ray ray, AABB aabb, out float t)
+        {
+            float tNear = float.MinValue;
+            float tFar = float.MaxValue;
+            for(int i = 0; i<3;++i)
+            {
+                if(i==0)
+                {
+                    if(Math.Abs(ray.Normal.X)<0.00001f)
+                    {
+                        if(ray.Position.X<aabb.Min.X||ray.Position.X>aabb.Max.X)
+                        {
+                            t = -1;
+                            return false;
+                        }
+                        continue;
+                    }
+                    else
+                    {
+                        tNear = Math.Max(tNear, Math.Min((aabb.Min.X - ray.Position.X) / ray.Normal.X, (aabb.Max.X - ray.Position.X) / ray.Normal.X));
+                        tFar = Math.Min(tFar, Math.Max((aabb.Min.X - ray.Position.X) / ray.Normal.X, (aabb.Max.X - ray.Position.X) / ray.Normal.X));
+                    }
+                }
+
+                else if(i==1)
+                {
+                     if(Math.Abs(ray.Normal.Y)<0.00001f)
+                     {
+                        if(ray.Position.Y<aabb.Min.Y||ray.Position.Y>aabb.Max.Y)
+                        {
+                            t = -1;
+                            return false;
+                        }
+                        continue;
+                     }
+                     else
+                    {
+                        tNear = Math.Max(tNear, Math.Min((aabb.Min.Y - ray.Position.Y) / ray.Normal.Y, (aabb.Max.Y - ray.Position.Y) / ray.Normal.Y));
+                        tFar = Math.Min(tFar, Math.Max((aabb.Min.Y - ray.Position.Y) / ray.Normal.Y, (aabb.Max.Y - ray.Position.Y) / ray.Normal.Y));
+                    }
+                }
+
+                else if(i==2)
+                {
+                    if(Math.Abs(ray.Normal.Z)<0.00001f)
+                    {
+                        if(ray.Position.Z<aabb.Min.Z||ray.Position.Z>aabb.Max.Z)
+                        {
+                            t = -1;
+                            return false;
+                        }
+                        continue;
+                    }
+                    else
+                    {
+                        tNear = Math.Max(tNear, Math.Min((aabb.Min.Z - ray.Position.Z) / ray.Normal.Z, (aabb.Max.Z - ray.Position.Z) / ray.Normal.Z));
+                        tFar = Math.Min(tFar, Math.Max((aabb.Min.Z - ray.Position.Z) / ray.Normal.Z, (aabb.Max.Z - ray.Position.Z) / ray.Normal.Z));
+                    }
+                }
+            }
+            if (tFar > tNear && tFar > 0.00001f)
+            {
+                if (tNear > 0.00001f) t = tNear;
+                else t = tFar;
+                return true;
+            }
+           
+            t = -1;
+            return false;
+        }
+
+        // I've implemented the blow methods for you.
+        // Nothing to do past this point
+
+        public static float Raycast(Ray ray, AABB aabb)
+        {
+            float t = -1;
+            if (!Raycast(ray, aabb, out t))
+            {
+                return -1;
+            }
+            return t;
+        }
+
+        public static bool Raycast(Ray ray, AABB aabb, out Point p)
+        {
+            float t = -1;
+            bool result = Raycast(ray, aabb, out t);
+            p = new Point(ray.Position.ToVector() + ray.Normal * t);
+            return result;
         }
     }
 }
