@@ -584,5 +584,19 @@ namespace CollisionDetectionSelector
             else if(d2 <= d3 && d2 <= d1) return closestPoint2;
             else return closestPoint3;
         }
+
+        // TODO: Implement this function
+        public static bool Intersects(Triangle triangle, Sphere sphere)
+        {
+            Point point = ClosestPoint(triangle, sphere.Position);
+            Vector3 distance = sphere.Position.ToVector() - point.ToVector();
+            return  distance.LengthSquared()<sphere.Radius*sphere.Radius;
+        }
+
+        // This is just a conveniance function
+        public static bool Intersects(Sphere sphere, Triangle triangle)
+        {
+            return Intersects(triangle, sphere);
+        }
     }
 }
