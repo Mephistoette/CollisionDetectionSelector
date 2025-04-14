@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CollisionDetectionSelector.Primitives;
 using System.ComponentModel.Design;
 using OpenTK.Graphics.OpenGL;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CollisionDetectionSelector
 {
@@ -598,5 +599,237 @@ namespace CollisionDetectionSelector
         {
             return Intersects(triangle, sphere);
         }
+
+        public static bool Intersects(Triangle triangle, AABB aabb)
+        {
+            // Get the triangle points as vectors
+            Vector3 v0 = triangle.p0.ToVector();
+            Vector3 v1 = triangle.p1.ToVector();
+            Vector3 v2 = triangle.p2.ToVector();
+
+            // Convert AABB to center-extents form
+            Vector3 c = aabb.Center.ToVector();
+            Vector3 e = aabb.Extents;
+
+            // Translate the triangle as conceptually moving the AABB to origin
+            // This is the same as we did with the point in triangle test
+            v0 -= c;
+            v1 -= c;
+            v2 -= c;
+
+            // Compute the edge vectors of the triangle  (ABC)
+            // That is, get the lines between the points as vectors
+            Vector3 f0 = v1 - v0; // B - A
+            Vector3 f1 = v2 - v1; // C - B
+            Vector3 f2 = v0 - v2; // A - C
+
+            // Compute the face normals of the AABB, because the AABB
+            // is at center, and of course axis aligned, we know that 
+            // it's normals are the X, Y and Z axis.
+            Vector3 u0 = new Vector3(1.0f, 0.0f, 0.0f);
+            Vector3 u1 = new Vector3(0.0f, 1.0f, 0.0f);
+            Vector3 u2 = new Vector3(0.0f, 0.0f, 1.0f);
+
+            // Compute the 9 axis
+            Vector3 axis_u0_f0 = Vector3.Cross(u0, f0);
+            Vector3 axis_u0_f1 = Vector3.Cross(u0, f1);
+            Vector3 axis_u0_f2 = Vector3.Cross(u0, f2);
+
+            Vector3 axis_u1_f0 = Vector3.Cross(u1, f0);
+            Vector3 axis_u1_f1 = Vector3.Cross(u1, f1);
+            Vector3 axis_u1_f2 = Vector3.Cross(u2, f2);
+
+            Vector3 axis_u2_f0 = Vector3.Cross(u2, f0);
+            Vector3 axis_u2_f1 = Vector3.Cross(u2, f1);
+            Vector3 axis_u2_f2 = Vector3.Cross(u2, f2);
+
+            // Testing axis: axis_u0_f0
+            // Project all 3 vertices of the triangle onto the Seperating axis
+            float p0 = Vector3.Dot(v0, axis_u0_f0);
+            float p1 = Vector3.Dot(v1, axis_u0_f0);
+            float p2 = Vector3.Dot(v2, axis_u0_f0);
+            // Project the AABB onto the seperating axis
+            // We don't care about the end points of the prjection
+            // just the length of the half-size of the AABB
+            // That is, we're only casting the extents onto the 
+            // seperating axis, not the AABB center. We don't
+            // need to cast the center, because we know that the
+            // aabb is at origin compared to the triangle!
+            float r = e.X * Math.Abs(Vector3.Dot(u0, axis_u0_f0)) +
+                        e.Y * Math.Abs(Vector3.Dot(u1, axis_u0_f0)) +
+                        e.Z * Math.Abs(Vector3.Dot(u2, axis_u0_f0));
+            // Now do the actual test, basically see if either of
+            // the most extreme of the triangle points intersects r
+            // You might need to write Min & Max functions that take 3 arguments
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                // This means BOTH of the points of the projected triangle
+                // are outside the projected half-length of the AABB
+                // Therefore the axis is seperating and we can exit
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u0_f1);
+            p1 = Vector3.Dot(v1, axis_u0_f1);
+            p2 = Vector3.Dot(v2, axis_u0_f1);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u0_f1)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u0_f1)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u0_f1));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u0_f2);
+            p1 = Vector3.Dot(v1, axis_u0_f2);
+            p2 = Vector3.Dot(v2, axis_u0_f2);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u0_f2)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u0_f2)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u0_f2));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u1_f0);
+            p1 = Vector3.Dot(v1, axis_u1_f0);
+            p2 = Vector3.Dot(v2, axis_u1_f0);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u1_f0)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u1_f0)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u1_f0));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u1_f1);
+            p1 = Vector3.Dot(v1, axis_u1_f1);
+            p2 = Vector3.Dot(v2, axis_u1_f1);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u1_f1)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u1_f1)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u1_f1));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u1_f2);
+            p1 = Vector3.Dot(v1, axis_u1_f2);
+            p2 = Vector3.Dot(v2, axis_u1_f2);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u1_f2)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u1_f2)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u1_f2));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u2_f0);
+            p1 = Vector3.Dot(v1, axis_u2_f0);
+            p2 = Vector3.Dot(v2, axis_u2_f0);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u2_f0)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u2_f0)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u2_f0));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u2_f1);
+            p1 = Vector3.Dot(v1, axis_u2_f1);
+            p2 = Vector3.Dot(v2, axis_u2_f1);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u2_f1)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u2_f1)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u2_f1));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            p0 = Vector3.Dot(v0, axis_u2_f2);
+            p1 = Vector3.Dot(v1, axis_u2_f2);
+            p2 = Vector3.Dot(v2, axis_u2_f2);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, axis_u2_f2)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, axis_u2_f2)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, axis_u2_f2));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+            // Next, we have 3 face normals from the AABB
+            // for these tests we are conceptually checking if the bounding box
+            // of the triangle intersects the bounding box of the AABB
+            // that is to say, the seperating axis for all tests are axis aligned:
+            // axis1: (1, 0, 0), axis2: (0, 1, 0), axis3 (0, 0, 1)
+            // TODO: 3 SAT tests
+            // Do the SAT given the 3 primary axis of the AABB
+            // You already have vectors for this: u0, u1 & u2
+
+            //axis-X
+            p0 = Vector3.Dot(u0, v0);
+            p1 = Vector3.Dot(u0, v1);
+            p2 = Vector3.Dot(u0, v2);
+
+            Vector2 interval_x = new Vector2(Math.Min(Math.Min(p0, p1), p2), Math.Max(Math.Max(p0, p1), p2));
+
+            if (interval_x.X > e.X || interval_x.Y < -e.X) return false;
+
+            p0 = Vector3.Dot(u1, v0);
+            p1 = Vector3.Dot(u1, v1);
+            p2 = Vector3.Dot(u1, v2);
+
+            Vector2 interval_y = new Vector2(Math.Min(Math.Min(p0, p1), p2), Math.Max(Math.Max(p0, p1), p2));
+
+            if (interval_y.X > e.Y || interval_y.Y < -e.Y) return false;
+
+            p0 = Vector3.Dot(u2, v0);
+            p1 = Vector3.Dot(u2, v1);
+            p2 = Vector3.Dot(u2, v2);
+
+            Vector2 interval_z = new Vector2(Math.Min(Math.Min(p0, p1), p2), Math.Max(Math.Max(p0, p1), p2));
+
+            if (interval_z.X > e.Z || interval_z.Y < -e.Z) return false;
+            // Finally, we have one last axis to test, the face normal of the triangle
+            // We can get the normal of the triangle by crossing the first two line segments
+            Vector3 triangleNormal = Vector3.Cross(f0, f1);
+            //TODO: 1 SAT test
+            p0 = Vector3.Dot(v0, triangleNormal);
+            p1 = Vector3.Dot(v1, triangleNormal);
+            p2 = Vector3.Dot(v2, triangleNormal);
+
+            r = e.X * Math.Abs(Vector3.Dot(u0, triangleNormal)) +
+            e.Y * Math.Abs(Vector3.Dot(u1, triangleNormal)) +
+            e.Z * Math.Abs(Vector3.Dot(u2, triangleNormal));
+
+            if (Math.Max(-Math.Max(Math.Max(p0, p1), p2), Math.Min(Math.Min(p0, p1), p2)) > r)
+            {
+                return false;
+            }
+
+            // Passed testing for all 13 seperating axis that exist!
+            return true;
+        }
+
+        public static bool Intersects(AABB aabb, Triangle triangle)
+        {
+            return Intersects(triangle, aabb);
+        }
+        
     }
 }
