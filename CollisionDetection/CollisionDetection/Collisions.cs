@@ -507,5 +507,54 @@ namespace CollisionDetectionSelector
             result = new Point(r.Position.ToVector() + r.Normal * t);
             return true;
         }
+
+        public static bool PointInTriangle(Triangle triangle, Point point)
+        {
+            //First find the point on the plane containing the triangle
+            Plane plane = new Plane(triangle.p0,triangle.p1,triangle.p2);
+            if (!PointOnPlane(point, plane)) return false;
+            //Point closestPointOnPlane = ClosestPoint(plane, point);
+            //if(closestPointOnPlane!=point) return false;
+
+            /*
+             * // Compute vectors        
+            v0 = C - A
+            v1 = B - A
+            v2 = P - A
+
+            // Compute dot products
+            dot00 = dot(v0, v0)
+            dot01 = dot(v0, v1)
+            dot02 = dot(v0, v2)
+            dot11 = dot(v1, v1)
+            dot12 = dot(v1, v2)
+
+            // Compute barycentric coordinates
+            invDenom = 1 / (dot00 * dot11 - dot01 * dot01)
+            u = (dot11 * dot02 - dot01 * dot12) * invDenom
+            v = (dot00 * dot12 - dot01 * dot02) * invDenom
+
+            // Check if point is in triangle
+            return (u >= 0) && (v >= 0) && (u + v < 1)
+
+             */
+            //Barycentric 
+            Vector3 ab = triangle.p1.ToVector() - triangle.p0.ToVector();
+            Vector3 ac = triangle.p2.ToVector() - triangle.p0.ToVector();
+            Vector3 ap = point.ToVector() - triangle.p0.ToVector();
+
+            float dot00 = Vector3.Dot(ab, ab);
+            float dot01 = Vector3.Dot(ab, ac);
+            float dot02 = Vector3.Dot(ab, ap);
+            float dot11 = Vector3.Dot(ac, ac);
+            float dot12 = Vector3.Dot(ac, ap);
+
+            float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+
+            float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+            float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+            if (0<=u&&0<=v&&u+v<=1) return true;
+            return false;
+        }
     }
 }
