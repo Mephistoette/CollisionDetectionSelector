@@ -417,5 +417,95 @@ namespace CollisionDetectionSelector
             p = new Point(ray.Position.ToVector() + ray.Normal * t);
             return result;
         }
+
+        public static bool LineTest(Line line, Sphere sphere, out Point result)
+        {
+            Ray r = new Ray();
+            r.Position = new Point(line.start.X, line.start.Y, line.start.Z);
+            //normal points from start to end, by value
+            //the normal setter will automatically normalize this
+            r.Normal = (line.end.ToVector() - line.start.ToVector());
+
+            //line case logic
+            float t = -1;
+            if (!Raycast(r, sphere, out t))
+            { //this changes t
+              //if raycast returns false the point was never on the line
+                result = new Point(0f, 0f, 0f);
+                return false;
+            }
+            //if t is < 0 , point is behind the start point
+            if (t < 0)
+            {
+                //by value, call new point don't use refernece
+                result = new Point(line.start.ToVector());
+                return false;
+            }
+            //if t is longer than length of line, intersection is after start point
+            else if (t * t > line.LengthSquared)
+            {
+                result = new Point(line.end.ToVector());
+                return false;
+            }
+            // If we made it here, the line intersected the sphere
+            result = new Point(r.Position.ToVector() + r.Normal * t);
+            return true;
+        }
+
+        public static bool LineTest(Line line, AABB aabb, out Point result)
+        {
+            //create ray out of line
+            Ray r = new Ray();
+            r.Position = new Point(line.start.X, line.start.Y, line.start.Z);
+            r.Normal = (line.end.ToVector() - line.start.ToVector());
+
+            //begin linecast logic
+            float t = -1;
+            if (!Raycast(r, aabb, out t))
+            {
+                //false = point was never in aabb
+                result = new Point(0f, 0f, 0f);
+                return false;
+            }
+            if (t < 0)
+            { //behind start point
+                result = new Point(line.start.ToVector());
+                return false;
+            }
+            else if (t * t > line.LengthSquared)
+            {//intersection after start point
+                result = new Point(line.end.ToVector());
+                return false;
+            }
+            //passed all tests
+            result = new Point(r.Position.ToVector() + r.Normal * t);
+            return true;
+        }
+
+        public static bool LineTest(Line line, Plane plane, out Point result)
+        {
+            Ray r = new Ray();
+            r.Position = new Point(line.start.X, line.start.Y, line.start.Z);
+            r.Normal = line.end.ToVector() - line.start.ToVector();
+
+            float t = -1;
+            if (!Raycast(r, plane, out t))
+            {
+                result = new Point(0f, 0f, 0f);
+                return false;
+            }
+            if (t < 0)
+            {
+                result = new Point(line.start.ToVector());
+                return false;
+            }
+            if (t * t > line.LengthSquared)
+            {
+                result = new Point(line.end.ToVector());
+                return false;
+            }
+            result = new Point(r.Position.ToVector() + r.Normal * t);
+            return true;
+        }
     }
 }
