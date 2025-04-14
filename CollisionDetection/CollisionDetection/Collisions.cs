@@ -556,5 +556,33 @@ namespace CollisionDetectionSelector
             if (0<=u&&0<=v&&u+v<=1) return true;
             return false;
         }
+
+        public static Point ClosestPoint(Triangle triangle, Point point)
+        {
+            //Firstly find the plane containing the triangle
+            Plane plane = new Plane(triangle.p0,triangle.p1,triangle.p2);
+            Point closestPointOnPlane = ClosestPoint(plane, point);
+            if(PointInTriangle(triangle,closestPointOnPlane)) return closestPointOnPlane;
+
+            Line ab = new Line(triangle.p0, triangle.p1);
+            Line ac = new Line(triangle.p0, triangle.p2);
+            Line bc = new Line(triangle.p1, triangle.p2);
+
+            Point closestPoint1 = ClosestPoint(ab, closestPointOnPlane);
+            Point closestPoint2 = ClosestPoint(ac, closestPointOnPlane);
+            Point closestPoint3 = ClosestPoint(bc, closestPointOnPlane);
+
+            Vector3 distance1 = closestPoint1.ToVector() - point.ToVector();
+            Vector3 distance2 = closestPoint2.ToVector() - point.ToVector();   
+            Vector3 distance3 = closestPoint3.ToVector() - point.ToVector();
+
+            float d1 = distance1.LengthSquared();
+            float d2 = distance2.LengthSquared();
+            float d3 = distance3.LengthSquared();
+
+            if (d1 <= d2 && d1 <= d3) return closestPoint1;
+            else if(d2 <= d3 && d2 <= d1) return closestPoint2;
+            else return closestPoint3;
+        }
     }
 }
