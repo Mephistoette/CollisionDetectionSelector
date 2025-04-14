@@ -370,5 +370,52 @@ namespace CollisionDetectionSelector
             p = new Point(ray.Position.ToVector() + ray.Normal * t);
             return result;
         }
+
+        // TODO: Implement ONLY THIS ONE method:
+        public static bool Raycast(Ray ray, Plane plane, out float t)
+        {
+            float nd = Vector3.Dot(ray.Normal,plane.Normal);
+            float pn = Vector3.Dot(ray.Position.Position, plane.Normal);
+
+            if(Math.Abs(nd)<0.00001f)
+            {
+                t = -1;
+                return false;
+            }
+
+            t = (plane.Distance - pn) / nd;
+            if(t<0.00001f)
+            {
+                t = -1; 
+                return false;
+            }
+
+            return true;
+        }
+
+
+        // I've implemented the blow methods for you.
+        // Nothing to do past this point
+
+        // Conveniance method, returns t without an out param
+        // If no collision happened, will return -1
+        public static float Raycast(Ray ray, Plane plane)
+        {
+            float t = -1;
+            if (!Raycast(ray, plane, out t))
+            {
+                return -1;
+            }
+            return t;
+        }
+
+        // Conveniance method, returns the point of intersection
+        public static bool Raycast(Ray ray, Plane plane, out Point p)
+        {
+            float t = -1;
+            bool result = Raycast(ray, plane, out t);
+            p = new Point(ray.Position.ToVector() + ray.Normal * t);
+            return result;
+        }
     }
 }
