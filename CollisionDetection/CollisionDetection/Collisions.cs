@@ -830,6 +830,25 @@ namespace CollisionDetectionSelector
         {
             return Intersects(triangle, aabb);
         }
-        
+
+
+        public static bool Intersects(Triangle triangle, Plane plane)
+        {
+            float p0 = Vector3.Dot(triangle.p0.ToVector(), plane.Normal) - plane.Distance;
+            float p1 = Vector3.Dot(triangle.p1.ToVector(), plane.Normal) - plane.Distance;
+            float p2 = Vector3.Dot(triangle.p2.ToVector(), plane.Normal) - plane.Distance;
+
+            float epislon = 0.00001f;
+            if(p0>epislon&&p1>epislon&&p2>epislon) return false;
+            else if(p0<-epislon&&p1<-epislon&&p2<-epislon) return false;
+
+            return true;
+        }
+
+        public static bool Intersects(Plane plane, Triangle triangle)
+        {
+            return Intersects(triangle, plane);
+        }
+
     }
 }
