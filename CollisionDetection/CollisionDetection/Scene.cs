@@ -9,11 +9,6 @@ namespace CollisionDetectionSelector
     {
         public OBJ RootObject = new OBJ(null);
 
-        public void Render()
-        {
-            RootObject.Render();
-        }
-
         public OBJ Raycast(Ray ray, out float t)
         {
             return RecursiveRaycast(RootObject, ray, out t);
@@ -39,6 +34,25 @@ namespace CollisionDetectionSelector
                 }
             }
             return null;
+        }
+
+        public OctreeNode Octree = null;
+
+        public void Initialize(float octreeSize)
+        {
+            Octree = new OctreeNode(new Point(0, 0, 0), octreeSize, null);
+            Octree.Split(3);
+        }
+
+        public void Render()
+        {
+            RootObject.Render();
+
+            GL.Disable(EnableCap.Lighting);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            Octree.DebugRender();
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            GL.Enable(EnableCap.Lighting);
         }
     }
 }
