@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Math_Implementation;
 using CollisionDetectionSelector.Primitives;
 using OpenTK.Graphics.OpenGL;
 
@@ -20,6 +21,7 @@ namespace CollisionDetectionSelector
         protected string materialPath = null;
         protected Triangle[] collisionMesh = null;
         protected AABB containerAABB = null;
+        protected Sphere containerSphere = null;
         public OBJLoader(string path)
         {
             List<float> vertices = new List<float>();
@@ -161,6 +163,11 @@ namespace CollisionDetectionSelector
                 }
             }
 
+            Vector3 difference_min = containerAABB.Min.ToVector() - containerAABB.Center.ToVector();
+            Vector3 dirrerence_max = containerAABB.Max.ToVector() - containerAABB.Center.ToVector();
+            float radius = Math.Max(difference_min.Length(), dirrerence_max.Length());
+            containerSphere = new Sphere(containerAABB.Center, radius);
+
             hasNormals = normalData.Count > 0;
             hasUvs = uvData.Count > 0;
 
@@ -178,7 +185,13 @@ namespace CollisionDetectionSelector
             GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(data.Count * sizeof(float)), data.ToArray(), BufferUsageHint.StaticDraw);//transfer array to gpu
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);//release array
         }
-
+        public Sphere BoundingSphere
+        {
+            get
+            {
+                return containerSphere;
+            }
+        }
         public AABB BoundingBox
         {
             get
@@ -196,6 +209,7 @@ namespace CollisionDetectionSelector
         }
         public void DebugRender()
         {
+            containerSphere.Render();
             containerAABB.Render();
             foreach (Triangle trianlge in collisionMesh)
             {
