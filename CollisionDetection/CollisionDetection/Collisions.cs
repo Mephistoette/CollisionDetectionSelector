@@ -861,36 +861,96 @@ namespace CollisionDetectionSelector
             return new Vector2(Math.Min(Math.Min(p0,p1),p2),Math.Max(Math.Max(p0,p1),p2));
         }
 
-        public static bool TestAxis(Triangle triangle1, Triangle triangle2, Vector3 axis) //true overlap
+        private static bool TestAxis(Triangle triangle1, Triangle triangle2, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
         {
-            // TODO: Test the intervals for overlap
-            Vector2 interval1 = GetInterval(triangle1, axis);
-            Vector2 interval2 = GetInterval(triangle2, axis);
+            Vector3 axis = Vector3.Cross(a - b, c - d);
 
-            if(interval1.X>interval2.Y||interval2.X>interval1.Y) return false;
-            return true;
+            if (axis.LengthSquared() < 0.0001f)
+            {
+                //axis is zero, try other combination
+                Vector3 n = Vector3.Cross(a - b, c - a);
+                axis = Vector3.Cross(a - b, n);
+                if (axis.LengthSquared() < 0.0001f)
+                {
+                    //axis still zero, not seperating axis
+                    return false;
+                }
+            }
+            Vector3 axisNorm = new Vector3(axis.X, axis.Y, axis.Z);
+            axisNorm.Normalize();
+            Vector2 i1 = GetInterval(triangle1, axisNorm);
+            Vector2 i2 = GetInterval(triangle2, axisNorm);
+
+            if (i1.Y < i2.X /*i1.max < i2.min*/ || i2.Y < i1.X /*i2.max < i1.min*/)
+            {
+                //intervals overlap on given axis
+                return true;
+            }
+            return false;//no collision
         }
 
         public static bool Intersects(Triangle triangle1, Triangle triangle2)
         {
-            Vector3 f1 = triangle1.p0.ToVector() - triangle1.p1.ToVector();
-            Vector3 f2 = triangle1.p1.ToVector() - triangle1.p2.ToVector();
-            Vector3 f0 = triangle1.p2.ToVector() - triangle1.p0.ToVector();
-
-            Vector3 w1 = triangle2.p0.ToVector() - triangle2.p1.ToVector();
-            Vector3 w2 = triangle2.p1.ToVector() - triangle2.p2.ToVector();
-            Vector3 w0 = triangle2.p2.ToVector() - triangle2.p0.ToVector();
-
-            Vector3[] axis = {Vector3.Cross(f1,w1),Vector3.Cross(f1,w2),Vector3.Cross(f1,w0),
-                             Vector3.Cross(f2,w1),Vector3.Cross(f2,w2),Vector3.Cross(f2,w0),
-                             Vector3.Cross(f0,w1),Vector3.Cross(f0,w2),Vector3.Cross(f0,w0),
-                             Vector3.Cross(f1,f2),Vector3.Cross(w1,w2)};
-
-            for(int i = 0; i < axis.Length; i++) 
+            //test 11axis
+            //face normal of t1
+            if (TestAxis(triangle1, triangle2, triangle1.p1.ToVector(), triangle1.p0.ToVector(), triangle1.p2.ToVector(), triangle1.p1.ToVector()))
             {
-                if(!TestAxis(triangle1, triangle2, axis[i])) return false;
+                //seperating axis found
+                return false;
             }
+
+            //face normal of triangle2
+            if (TestAxis(triangle1, triangle2, triangle2.p1.ToVector(), triangle2.p0.ToVector(), triangle2.p2.ToVector(), triangle2.p1.ToVector()))
+            {
+                //seperating axis found
+                return false;
+            }
+            /*
+            //Vector3[] t1Edges = new Vector3[3] { t1.p1.ToVector() - t1.p0.ToVector(),
+            //                                     t1.p2.ToVector() - t1.p1.ToVector(),
+            //                                     t1.p0.ToVector() - t1.p2.ToVector() };
+            */
+            //go through each of the edges (0x0,0x1,0x2,1x0,1x,1x2,2x0,2x1,2x2)
+            if (TestAxis(triangle1, triangle2, triangle1.p1.ToVector(), triangle1.p0.ToVector(), triangle2.p1.ToVector(), triangle2.p0.ToVector()))
+            { //0x0
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p1.ToVector(), triangle1.p0.ToVector(), triangle2.p2.ToVector(), triangle2.p1.ToVector()))
+            { //0x1
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p1.ToVector(), triangle1.p0.ToVector(), triangle2.p0.ToVector(), triangle2.p2.ToVector()))
+            { //0x2
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p2.ToVector(), triangle1.p1.ToVector(), triangle2.p1.ToVector(), triangle2.p0.ToVector()))
+            { //1x0
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p2.ToVector(), triangle1.p1.ToVector(), triangle2.p2.ToVector(), triangle2.p1.ToVector()))
+            { //1x1
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p2.ToVector(), triangle1.p1.ToVector(), triangle2.p0.ToVector(), triangle2.p2.ToVector()))
+            { //1x2
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p0.ToVector(), triangle1.p2.ToVector(), triangle2.p1.ToVector(), triangle2.p0.ToVector()))
+            { //2x0
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p0.ToVector(), triangle1.p2.ToVector(), triangle2.p2.ToVector(), triangle2.p1.ToVector()))
+            { //2x1
+                return false;
+            }
+            if (TestAxis(triangle1, triangle2, triangle1.p0.ToVector(), triangle1.p2.ToVector(), triangle2.p0.ToVector(), triangle2.p2.ToVector()))
+            { //2x2
+                return false;
+            }
+            //no seperating axis found, no intersection
             return true;
         }
+
+
     }
 }
