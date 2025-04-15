@@ -24,6 +24,7 @@ namespace CollisionDetectionSelector.Samples
             obj = new OBJLoader("E:\\CollisionDetectionSelector\\CollisionDetectionSelector\\CollisionDetection\\CollisionDetection\\suzanne.obj");
         }
 
+
         public override void Render()
         {
             base.Render();
@@ -32,6 +33,9 @@ namespace CollisionDetectionSelector.Samples
             GL.PushMatrix();
             GL.Scale(3.0f, 3.0f, 3.0f);
             obj.Render();
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            obj.RenderBVH();
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.PopMatrix();
         }
     }

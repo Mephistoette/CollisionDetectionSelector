@@ -117,5 +117,13 @@ namespace CollisionDetectionSelector.Primitives
         {
             return "Triangle count: " + model.NumCollisionTriangles;
         }
+
+        public void RenderBVH()
+        {
+            GL.PushMatrix();
+            GL.MultMatrix(WorldMatrix.OpenGL);
+            model.RenderBVH();
+            GL.PopMatrix();
+        }
     }
 }

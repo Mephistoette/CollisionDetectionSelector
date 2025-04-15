@@ -22,6 +22,7 @@ namespace CollisionDetectionSelector
         protected Triangle[] collisionMesh = null;
         protected AABB containerAABB = null;
         protected Sphere containerSphere = null;
+        protected BVHNode bvhRoot = null;
         public OBJLoader(string path)
         {
             List<float> vertices = new List<float>();
@@ -125,43 +126,51 @@ namespace CollisionDetectionSelector
             }
 
             collisionMesh = new Triangle[vertexData.Count / 9];
+            containerAABB = new AABB(new Point(vertices[0], vertices[1], vertices[2]),
+                                        new Point(vertices[0], vertices[1], vertices[2]));
+
+            for (int i = 0; i < vertexData.Count / 3; ++i)
+            {
+                if (vertexData[i * 3 + 0] < containerAABB.Min.X)
+                {
+                    containerAABB.Min.X = vertexData[i * 3 + 0];
+                }
+                if (vertexData[i * 3 + 0] > containerAABB.Max.X)
+                {
+                    containerAABB.Max.X = vertexData[i * 3 + 0];
+                }
+                if (vertexData[i * 3 + 1] < containerAABB.Min.Y)
+                {
+                    containerAABB.Min.Y = vertexData[i * 3 + 1];
+                }
+                if (vertexData[i * 3 + 1] > containerAABB.Max.Y)
+                {
+                    containerAABB.Max.Y = vertexData[i * 3 + 1];
+                }
+                if (vertexData[i * 3 + 2] < containerAABB.Min.Z)
+                {
+                    containerAABB.Min.Z = vertexData[i * 3 + 2];
+                }
+                if (vertexData[i * 3 + 2] > containerAABB.Max.Z)
+                {
+                    containerAABB.Max.Z = vertexData[i * 3 + 2];
+                }
+            }
+
+            bvhRoot = new BVHNode(containerAABB);
+
             for (int i = 0; i < collisionMesh.Length; ++i)
             {
                 collisionMesh[i] =
                 new Triangle(new Point(vertexData[i * 9 + 0], vertexData[i * 9 + 1], vertexData[i * 9 + 2]),
                              new Point(vertexData[i * 9 + 3], vertexData[i * 9 + 4], vertexData[i * 9 + 5]),
                              new Point(vertexData[i * 9 + 6], vertexData[i * 9 + 7], vertexData[i * 9 + 8]));
-            }
-            containerAABB = new AABB(new Point(vertices[0], vertices[1], vertices[2]),
-                new Point(vertices[0], vertices[1], vertices[2]));
 
-            for (int i = 0;i < vertexData.Count / 3; ++i)
-            {
-                if (vertexData[i*3 + 0] < containerAABB.Min.X)
-                {
-                    containerAABB.Min.X = vertexData[i*3 + 0];
-                }
-                if (vertexData[i*3 + 0] > containerAABB.Max.X)
-                {
-                    containerAABB.Max.X = vertexData[i*3 + 0];
-                }
-                if (vertexData[i*3 + 1] < containerAABB.Min.Y)
-                {
-                    containerAABB.Min.Y = vertexData[i*3 + 1];
-                }
-                if (vertexData[i*3 + 1] > containerAABB.Max.Y)
-                {
-                    containerAABB.Max.Y = vertexData[i*3 + 1];
-                }
-                if (vertexData[i*3 + 2] < containerAABB.Min.Z)
-                {
-                    containerAABB.Min.Z = vertexData[i*3 + 2];
-                }
-                if (vertexData[i*3 + 2] > containerAABB.Max.Z)
-                {
-                    containerAABB.Max.Z = vertexData[i*3 + 2];
-                }
+                bvhRoot.Triangles.Add(collisionMesh[i]);
             }
+
+
+
 
             Vector3 difference_min = containerAABB.Min.ToVector() - containerAABB.Center.ToVector();
             Vector3 dirrerence_max = containerAABB.Max.ToVector() - containerAABB.Center.ToVector();
@@ -213,6 +222,33 @@ namespace CollisionDetectionSelector
             get
             {
                 return collisionMesh;
+            }
+        }
+        public BVHNode BvhRoot
+        {
+            get
+            {
+                return bvhRoot;
+            }
+        }
+
+        // Non-Recursive public API
+        public void RenderBVH()
+        {
+            RenderBVH(bvhRoot);
+        }
+
+        // Recursive private API
+        private void RenderBVH(BVHNode node)
+        {
+            node.AABB.Render();
+
+            if (node.Children != null)
+            {
+                foreach (BVHNode child in node.Children)
+                {
+                    RenderBVH(child);
+                }
             }
         }
         public void DebugRender()
@@ -286,5 +322,31 @@ namespace CollisionDetectionSelector
             GL.DisableClientState(ArrayCap.VertexArray);
         }
 
+
+        public class BVHNode
+        {
+            protected static int maxDepth = 3;
+
+            public List<BVHNode> Children = null;
+            public List<Triangle> Triangles = null;
+            public AABB AABB = null;
+
+            public BVHNode(AABB aabb)
+            {
+                // Store AABB by value, not reference
+                AABB = new AABB(aabb.Min, aabb.Max);
+                // Assume this is leaf node by default
+                Triangles = new List<Triangle>();
+                Children = null;
+            }
+
+            public bool IsLeaf
+            {
+                get
+                {
+                    return Children == null && Triangles != null;
+                }
+            }
+        }
     }
 }
