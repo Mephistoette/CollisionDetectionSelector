@@ -207,6 +207,14 @@ namespace CollisionDetectionSelector
                 return collisionMesh.Length;
             }
         }
+
+        public Triangle[] CollisionMesh
+        {
+            get
+            {
+                return collisionMesh;
+            }
+        }
         public void DebugRender()
         {
             containerSphere.Render();

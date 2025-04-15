@@ -1030,5 +1030,56 @@ namespace CollisionDetectionSelector
             if (PointInTriangle(triangle, result)) return true;
             return false;
         }
+
+        // Conveniance method
+        public static bool Intersects(OBJ model, Sphere sphere)
+        {
+            return Intersects(sphere, model);
+        }
+
+        public static bool Intersects(Sphere sphere, OBJ model)
+        {
+            Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
+
+            Vector3 newSpherePos = Matrix4.MultiplyPoint(inverseWorldMatrix, sphere.Position.ToVector());
+            // We have to scale the radius of the sphere! This is difficult. The new scalar is the old radius
+            // multiplied by the largest scale component of the matrix
+            float newSphereRad = sphere.Radius * Math.Abs(Math.Max(
+                    Math.Max(Math.Abs(inverseWorldMatrix[0, 0]), Math.Abs(inverseWorldMatrix[1, 1])),
+                    Math.Abs(inverseWorldMatrix[2, 2])));
+
+            // We make this new sphere because the old one is passed in
+            // by reference. We don't want to actually modify
+            // the reference!
+            Sphere translatedSphere = new Sphere(newSpherePos, newSphereRad);
+
+            // Broad-phase
+            // If the bounding sphere does not intersect, nothing will
+            if (!Intersects(model.BoundingSphere, translatedSphere))
+            {
+                return false;
+            }
+
+            // Broad-phase
+            // If the bounding box does not intersect, nothing will
+            if (!Intersects(model.BoundingBox, translatedSphere))
+            {
+                return false;
+            }
+
+            // Narrow-phase
+            // At least one triangle must intersect!
+            for (int i = 0, len = model.Mesh.Length; i < len; ++i)
+            {
+                if (Intersects(model.Mesh[i], translatedSphere))
+                {
+                    return true;
+                }
+            }
+
+            // Narrow-phase
+            // None of the triangles intersected, no intersection
+            return false;
+        }
     }
 }
