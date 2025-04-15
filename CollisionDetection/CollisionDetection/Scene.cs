@@ -29,16 +29,18 @@ namespace CollisionDetectionSelector
             Octree = new OctreeNode(new Point(0, 0, 0), octreeSize, null);
             Octree.Split(3);
         }
-        public void Render()
+        public void Render(bool debug)
         {
             RootObject.Render();
-            GL.Disable(EnableCap.Lighting);
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-            Octree.DebugRender();
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-            /* NEW */
-            Octree.DebugRenderOnlyVisitedNodes();
-            GL.Enable(EnableCap.Lighting);
+            if (debug)
+            {
+                GL.Disable(EnableCap.Lighting);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                Octree.DebugRender();
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                Octree.DebugRenderOnlyVisitedNodes();
+                GL.Enable(EnableCap.Lighting);
+            }
         }
     }
 }

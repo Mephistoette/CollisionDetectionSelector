@@ -95,7 +95,7 @@ namespace CollisionDetectionSelector.Samples
             DrawOrigin();
 
             GL.Enable(EnableCap.Lighting);
-            scene.Render();
+            scene.Render(false);
             GL.Disable(EnableCap.Lighting);
 
             foreach (Ray r in rays)
