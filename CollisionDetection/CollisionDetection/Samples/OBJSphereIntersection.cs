@@ -29,7 +29,7 @@ namespace CollisionDetectionSelector.Samples
             GL.Light(LightName.Light0, LightParameter.Diffuse, new float[] { 0f, 1f, 0f, 1f });
             GL.Light(LightName.Light0, LightParameter.Specular, new float[] { 1f, 1f, 1f, 1f });
 
-            loader = new OBJLoader("Assets/suzanne.obj");
+            loader = new OBJLoader("E:\\CollisionDetectionSelector\\CollisionDetectionSelector\\CollisionDetection\\CollisionDetection\\suzanne.obj");
             objs[0] = new OBJ(loader);
             objs[1] = new OBJ(loader);
             objs[2] = new OBJ(loader);
