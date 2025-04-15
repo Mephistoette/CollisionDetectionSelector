@@ -169,8 +169,9 @@ namespace CollisionDetectionSelector
                 bvhRoot.Triangles.Add(collisionMesh[i]);
             }
 
-            //split BVHNode
+            //split BVHNode && shake BVHNode
             bvhRoot.Split();
+            bvhRoot.Shake();
 
             Vector3 difference_min = containerAABB.Min.ToVector() - containerAABB.Center.ToVector();
             Vector3 dirrerence_max = containerAABB.Max.ToVector() - containerAABB.Center.ToVector();
