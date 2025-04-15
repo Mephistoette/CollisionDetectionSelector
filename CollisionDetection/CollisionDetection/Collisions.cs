@@ -952,5 +952,70 @@ namespace CollisionDetectionSelector
         }
 
 
+        public static bool Raycast(Ray ray, Triangle triangle, out float t)
+        {
+            // Firstly find the point on the plane containing the triangle hitted by the ray
+            //Break triangle into Vectors
+            Line ab = new Line(triangle.p0, triangle.p1);
+            Line bc = new Line(triangle.p1, triangle.p2);
+            Line ca = new Line(triangle.p2, triangle.p0);
+
+            if (!Raycast(ray, new Plane(triangle.p0, triangle.p1, triangle.p2), out t))
+            {
+                //no collision?
+                return false;
+            }
+            Point i = new Point(ray.Position.ToVector() + ray.Normal * t);
+
+            //v = orthogonal(perpendicular) line to BC, and passes through triangle.p0 / A
+            //v = AB - projection(bc onto ab)
+            Vector3 v = ab.ToVector() - Vector3.Cross(ab.ToVector(), bc.ToVector());
+
+            //a = 1- (v dot ai / v dot ab)
+            Line ai = new Line(triangle.p0, i);
+            float a = 1 - (Vector3.Dot(v, ai.ToVector()) / Vector3.Dot(v, ab.ToVector()));
+            //bounds check (0min 1 max)
+            if (0.0f > a || a > 1.0f)
+            {
+                return false; //out of bounds
+            }
+            //v = orthogonal(perpendicular) line to CA, and passes through triangle.p1 / B
+            //v = BC - projection(bc onto ca)
+            v = bc.ToVector() - Vector3.Cross(bc.ToVector(), ca.ToVector());
+
+            //b = 1 - (v dot bi / v dot bc)
+            Line bi = new Line(triangle.p1, i);
+            float b = 1 - (Vector3.Dot(v, bi.ToVector()) / Vector3.Dot(v, bc.ToVector()));
+            //bounds check (0min 1 max)
+            if (0.0f > b || b > 1.0f)
+            {
+                return false; // out of bounds
+            }
+
+            //if a and b are between 0 and 1, then c will always be too
+            return true;
+        }
+
+        // Conveniance method, returns t without an out param
+        // If no collision happened, will return -1
+        public static float Raycast(Ray ray, Triangle triangle)
+        {
+            float t = -1;
+            if (!Raycast(ray, triangle, out t))
+            {
+                return -1;
+            }
+            return t;
+        }
+
+        // Conveniance method, returns the point of intersection
+        public static bool Raycast(Ray ray, Triangle triangle, out Point p)
+        {
+            float t = -1;
+            bool result = Raycast(ray, triangle, out t);
+            p = new Point(ray.Position.ToVector() + ray.Normal * t);
+            return result;
+        }
+
     }
 }
