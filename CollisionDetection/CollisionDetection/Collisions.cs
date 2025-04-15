@@ -850,5 +850,47 @@ namespace CollisionDetectionSelector
             return Intersects(triangle, plane);
         }
 
+        public static Vector2 GetInterval(Triangle triangle, Vector3 axis)
+        {
+            // Vector2.X = min
+            // Vector2.Y = max.
+            float p0 = Vector3.Dot(triangle.p0.ToVector(), axis);
+            float p1 = Vector3.Dot(triangle.p1.ToVector(), axis);
+            float p2 = Vector3.Dot(triangle.p2.ToVector(), axis);
+
+            return new Vector2(Math.Min(Math.Min(p0,p1),p2),Math.Max(Math.Max(p0,p1),p2));
+        }
+
+        public static bool TestAxis(Triangle triangle1, Triangle triangle2, Vector3 axis) //true overlap
+        {
+            // TODO: Test the intervals for overlap
+            Vector2 interval1 = GetInterval(triangle1, axis);
+            Vector2 interval2 = GetInterval(triangle2, axis);
+
+            if(interval1.X>interval2.Y||interval2.X>interval1.Y) return false;
+            return true;
+        }
+
+        public static bool Intersects(Triangle triangle1, Triangle triangle2)
+        {
+            Vector3 f1 = triangle1.p0.ToVector() - triangle1.p1.ToVector();
+            Vector3 f2 = triangle1.p1.ToVector() - triangle1.p2.ToVector();
+            Vector3 f0 = triangle1.p2.ToVector() - triangle1.p0.ToVector();
+
+            Vector3 w1 = triangle2.p0.ToVector() - triangle2.p1.ToVector();
+            Vector3 w2 = triangle2.p1.ToVector() - triangle2.p2.ToVector();
+            Vector3 w0 = triangle2.p2.ToVector() - triangle2.p0.ToVector();
+
+            Vector3[] axis = {Vector3.Cross(f1,w1),Vector3.Cross(f1,w2),Vector3.Cross(f1,w0),
+                             Vector3.Cross(f2,w1),Vector3.Cross(f2,w2),Vector3.Cross(f2,w0),
+                             Vector3.Cross(f0,w1),Vector3.Cross(f0,w2),Vector3.Cross(f0,w0),
+                             Vector3.Cross(f1,f2),Vector3.Cross(w1,w2)};
+
+            for(int i = 0; i < axis.Length; i++) 
+            {
+                if(!TestAxis(triangle1, triangle2, axis[i])) return false;
+            }
+            return true;
+        }
     }
 }
