@@ -1256,6 +1256,11 @@ namespace CollisionDetectionSelector
 
         public static bool Raycast(Ray ray, OBJ model, out float t)
         {
+            if (model.IsEmpty)
+            {
+                t = -1;
+                return false;
+            }
 
             Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
             Ray newRay = new Ray(ray.Position, ray.Normal);

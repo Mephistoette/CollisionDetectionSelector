@@ -5,6 +5,8 @@ namespace CollisionDetectionSelector.Primitives
 {
     class OBJ
     {
+        public OBJ Parent = null;
+        public List<OBJ> Children = new List<OBJ>();
         OBJLoader model = null;
 
         // VERY IMPORTANT THAT THESE HAVE DEFAULT VALUES
@@ -18,7 +20,25 @@ namespace CollisionDetectionSelector.Primitives
         }
 
         protected Matrix4 worldMatrix;
-        protected bool dirty = true; // MUST BE TRUE BY DEFAULT
+        protected bool dirtySelf = true;
+        protected bool dirty
+        {
+            get
+            {
+                return dirtySelf;
+            }
+            set
+            {
+                dirtySelf = value;
+                if (value)
+                {
+                    foreach (OBJ child in Children)
+                    {
+                        child.dirty = true;
+                    }
+                }
+            }
+        }
 
         public Matrix4 WorldMatrix
         {
@@ -36,6 +56,16 @@ namespace CollisionDetectionSelector.Primitives
                     Matrix4 scaling = Matrix4.Scale(scale);
 
                     worldMatrix = translation * orientation * scaling;
+
+                    if (Parent != null)
+                    {
+                        worldMatrix = Parent.WorldMatrix * worldMatrix;
+                    }
+
+                    // DO NOT FORGET THIS! The first version
+                    // I wrote, i forgot to clear the dirty flag
+                    // and my game stopped running!
+                    dirty = false;
                 }
                 return worldMatrix;
             }
@@ -95,22 +125,65 @@ namespace CollisionDetectionSelector.Primitives
             }
         }
 
-        public void Render()
+
+        private int ChildrenRender(bool normal, bool bvh, bool debug)
         {
+            int result = 0;
+            if (Children != null)
+            {
+                foreach (OBJ child in Children)
+                {
+                    if (normal)
+                    {
+                        result += child.Render();
+                    }
+                    else if (bvh)
+                    {
+                        child.RenderBVH();
+                    }
+                    else if (debug)
+                    {
+                        child.DebugRender();
+                    }
+                    if (child.Children != null)
+                    {
+                        result += child.ChildrenRender(normal, bvh, debug);
+                    }
+                }
+            }
+            return result;
+        }
+
+
+        public int Render()
+        {
+
+            int result = 0;
+
             GL.PushMatrix();
-            // IMPORTANT: Calling the getter, not raw accessing the array!
+            //always getter
             GL.MultMatrix(WorldMatrix.OpenGL);
-            model.Render();
+            if (model != null)
+            {
+                model.Render();
+                result++;
+            }
             GL.PopMatrix();
+
+            result += ChildrenRender(true, false, false);
+            return result;
         }
 
         public void DebugRender()
         {
             GL.PushMatrix();
-            // IMPORTANT: Calling the getter, not raw accessing the array!
             GL.MultMatrix(WorldMatrix.OpenGL);
-            model.DebugRender();
+            if (model != null)
+            {
+                model.DebugRender();
+            }
             GL.PopMatrix();
+            ChildrenRender(false, false, true);
         }
 
         public override string ToString()
@@ -122,8 +195,12 @@ namespace CollisionDetectionSelector.Primitives
         {
             GL.PushMatrix();
             GL.MultMatrix(WorldMatrix.OpenGL);
-            model.RenderBVH();
+            if (model != null)
+            {
+                model.RenderBVH();
+            }
             GL.PopMatrix();
+            ChildrenRender(false, true, false);
         }
 
         public BVHNode BVHRoot
@@ -131,6 +208,14 @@ namespace CollisionDetectionSelector.Primitives
             get
             {
                 return model.BvhRoot;
+            }
+        }
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return model == null;
             }
         }
     }
