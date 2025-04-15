@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CollisionDetectionSelector.Primitives;
 using OpenTK.Graphics.OpenGL;
 
 namespace CollisionDetectionSelector
@@ -17,6 +18,7 @@ namespace CollisionDetectionSelector
         protected int numUvs = 0;
 
         protected string materialPath = null;
+        protected Triangle[] collisionMesh = null;
 
         public OBJLoader(string path)
         {
@@ -101,6 +103,7 @@ namespace CollisionDetectionSelector
                 }
 
             }
+
             for (int i = 0; i < vertIndex.Count; i++)
             {
                 vertexData.Add(vertices[(int)vertIndex[i] * 3 + 0]);
@@ -119,6 +122,16 @@ namespace CollisionDetectionSelector
                 uvData.Add(texCoord[(int)uvIndex[i] * 2 + 1]);
             }
 
+            collisionMesh = new Triangle[vertexData.Count / 9];
+            for (int i = 0; i < collisionMesh.Length; ++i)
+            {
+                collisionMesh[i] =
+                new Triangle(new Point(vertexData[i * 9 + 0], vertexData[i * 9 + 1], vertexData[i * 9 + 2]),
+                             new Point(vertexData[i * 9 + 3], vertexData[i * 9 + 4], vertexData[i * 9 + 5]),
+                             new Point(vertexData[i * 9 + 6], vertexData[i * 9 + 7], vertexData[i * 9 + 8]));
+            }
+
+
             hasNormals = normalData.Count > 0;
             hasUvs = uvData.Count > 0;
 
@@ -136,6 +149,22 @@ namespace CollisionDetectionSelector
             GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(data.Count * sizeof(float)), data.ToArray(), BufferUsageHint.StaticDraw);//transfer array to gpu
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);//release array
         }
+
+        public int NumCollisionTriangles
+        {
+            get
+            {
+                return collisionMesh.Length;
+            }
+        }
+        public void DebugRender()
+        {
+            foreach (Triangle trianlge in collisionMesh)
+            {
+                trianlge.Render();
+            }
+        }
+
         public void Destroy()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
