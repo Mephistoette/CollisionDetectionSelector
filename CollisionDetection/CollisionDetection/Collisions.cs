@@ -1221,30 +1221,57 @@ namespace CollisionDetectionSelector
             return false;
         }
 
+
+        public static bool Raycast(Ray ray, BVHNode node, out float t)
+        {
+            if (!Raycast(ray, node.AABB, out t))
+            {
+                return false;
+            }
+
+            if (node.Children != null)
+            {
+                foreach (BVHNode child in node.Children)
+                {
+                    if (Raycast(ray, child, out t))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (node.Triangles != null)
+            {
+                foreach (Triangle triangle in node.Triangles)
+                {
+                    if (Raycast(ray, triangle, out t))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public static bool Raycast(Ray ray, OBJ model, out float t)
         {
 
+            Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
             Ray newRay = new Ray(ray.Position, ray.Normal);
+            newRay.Position = new Point(Matrix4.MultiplyPoint(inverseWorldMatrix, ray.Position.ToVector()));
+            newRay.Normal = Matrix4.MultiplyVector(inverseWorldMatrix, ray.Normal);
+
             if (!Raycast(newRay, model.BoundingSphere, out t))
             {
                 return false;
             }
-
-            if(!Raycast(newRay,model.BoundingBox,out t))
+            if (!Raycast(newRay, model.BoundingBox, out t))
             {
                 return false;
             }
 
-            for (int i = 0, len = model.Mesh.Length; i < len; ++i)
-            {
-                if (Raycast(newRay,model.Mesh[i],out t))
-                {
-                    return true;
-                }
-            }
-
-            t = -1;
-            return false;
+            return Raycast(newRay, model.BVHRoot, out t);
         }
     }
 }

@@ -125,5 +125,13 @@ namespace CollisionDetectionSelector.Primitives
             model.RenderBVH();
             GL.PopMatrix();
         }
+
+        public BVHNode BVHRoot
+        {
+            get
+            {
+                return model.BvhRoot;
+            }
+        }
     }
 }
