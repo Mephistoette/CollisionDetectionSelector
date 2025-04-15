@@ -32,7 +32,7 @@ namespace CollisionDetectionSelector.Samples
 
             GL.PushMatrix();
             GL.Scale(3.0f, 3.0f, 3.0f);
-            obj.Render();
+            //obj.Render();
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             obj.RenderBVH();
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);

@@ -169,8 +169,8 @@ namespace CollisionDetectionSelector
                 bvhRoot.Triangles.Add(collisionMesh[i]);
             }
 
-
-
+            //split BVHNode
+            bvhRoot.Split();
 
             Vector3 difference_min = containerAABB.Min.ToVector() - containerAABB.Center.ToVector();
             Vector3 dirrerence_max = containerAABB.Max.ToVector() - containerAABB.Center.ToVector();
@@ -323,30 +323,6 @@ namespace CollisionDetectionSelector
         }
 
 
-        public class BVHNode
-        {
-            protected static int maxDepth = 3;
 
-            public List<BVHNode> Children = null;
-            public List<Triangle> Triangles = null;
-            public AABB AABB = null;
-
-            public BVHNode(AABB aabb)
-            {
-                // Store AABB by value, not reference
-                AABB = new AABB(aabb.Min, aabb.Max);
-                // Assume this is leaf node by default
-                Triangles = new List<Triangle>();
-                Children = null;
-            }
-
-            public bool IsLeaf
-            {
-                get
-                {
-                    return Children == null && Triangles != null;
-                }
-            }
-        }
     }
 }
