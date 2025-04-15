@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define USE_AABB_MINMAX
+
+using System;
 using Math_Implementation;
 using System.Collections.Generic;
 using System.Linq;
@@ -1072,6 +1074,97 @@ namespace CollisionDetectionSelector
             for (int i = 0, len = model.Mesh.Length; i < len; ++i)
             {
                 if (Intersects(model.Mesh[i], translatedSphere))
+                {
+                    return true;
+                }
+            }
+
+            // Narrow-phase
+            // None of the triangles intersected, no intersection
+            return false;
+        }
+
+        // Conveniance function
+        public static bool Intersects(OBJ model, AABB aabb)
+        {
+            return Intersects(aabb, model);
+        }
+
+        public static bool Intersects(AABB aabb, OBJ model)
+        {
+            // TODO: Provide an implementation for this
+            Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
+
+#if USE_AABB_MINMAX
+        Vector3 newAABBMin = Matrix4.MultiplyPoint(inverseWorldMatrix, aabb.Min.ToVector());
+        Vector3 newAABBMax = Matrix4.MultiplyPoint(inverseWorldMatrix, aabb.Max.ToVector());
+        AABB newAABB = new AABB(new Point(newAABBMin), new Point(newAABBMax));
+#else
+            Vector3 newAABBCenter = Matrix4.MultiplyPoint(inverseWorldMatrix, aabb.Center.ToVector());
+            Vector3 newAABBExtents = Matrix4.MultiplyVector(inverseWorldMatrix, aabb.Extents);
+            AABB newAABB = new AABB(new Point(newAABBCenter), newAABBExtents);
+#endif
+
+            //aabb bounding box collision
+            if (!Intersects(model.BoundingBox, newAABB))
+            {
+                return false;
+            }
+            //aabb bounding sphere collision
+            if (!Intersects(newAABB, model.BoundingSphere))
+            {
+                return false;
+            }
+            //aabb mesh triangles  collision
+            foreach (Triangle triangle in model.Mesh)
+            {
+                if (Collisions.Intersects(newAABB, triangle))
+                {
+                    return true;
+                }
+            }
+            //by deafult no collision
+            return false;
+        }
+
+        // conveniance method
+        public static bool Intersects(OBJ model, Plane plane)
+        {
+            return Intersects(plane, model);
+        }
+
+        public static bool Intersects(Plane plane, OBJ model)
+        {
+            Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
+
+            Vector3 newPlaneNormal = Matrix4.MultiplyPoint(inverseWorldMatrix, plane.Normal);
+
+            float newPlaneDistance= plane.Distance * Math.Abs(Math.Max(
+                    Math.Max(Math.Abs(inverseWorldMatrix[0, 0]), Math.Abs(inverseWorldMatrix[1, 1])),
+                    Math.Abs(inverseWorldMatrix[2, 2])));
+
+
+            Plane translatedPlane = new Plane(newPlaneNormal, newPlaneDistance);
+
+            // Broad-phase
+            // If the bounding sphere does not intersect, nothing will
+            if (!Intersects(model.BoundingSphere, translatedPlane))
+            {
+                return false;
+            }
+
+            // Broad-phase
+            // If the bounding box does not intersect, nothing will
+            if (!Intersects(model.BoundingBox, translatedPlane))
+            {
+                return false;
+            }
+
+            // Narrow-phase
+            // At least one triangle must intersect!
+            for (int i = 0, len = model.Mesh.Length; i < len; ++i)
+            {
+                if (Intersects(model.Mesh[i], translatedPlane))
                 {
                     return true;
                 }
