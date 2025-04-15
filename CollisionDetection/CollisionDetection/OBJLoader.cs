@@ -19,7 +19,7 @@ namespace CollisionDetectionSelector
 
         protected string materialPath = null;
         protected Triangle[] collisionMesh = null;
-
+        protected AABB containerAABB = null;
         public OBJLoader(string path)
         {
             List<float> vertices = new List<float>();
@@ -130,7 +130,36 @@ namespace CollisionDetectionSelector
                              new Point(vertexData[i * 9 + 3], vertexData[i * 9 + 4], vertexData[i * 9 + 5]),
                              new Point(vertexData[i * 9 + 6], vertexData[i * 9 + 7], vertexData[i * 9 + 8]));
             }
+            containerAABB = new AABB(new Point(vertices[0], vertices[1], vertices[2]),
+                new Point(vertices[0], vertices[1], vertices[2]));
 
+            for (int i = 0;i < vertexData.Count / 3; ++i)
+            {
+                if (vertexData[i*3 + 0] < containerAABB.Min.X)
+                {
+                    containerAABB.Min.X = vertexData[i*3 + 0];
+                }
+                if (vertexData[i*3 + 0] > containerAABB.Max.X)
+                {
+                    containerAABB.Max.X = vertexData[i*3 + 0];
+                }
+                if (vertexData[i*3 + 1] < containerAABB.Min.Y)
+                {
+                    containerAABB.Min.Y = vertexData[i*3 + 1];
+                }
+                if (vertexData[i*3 + 1] > containerAABB.Max.Y)
+                {
+                    containerAABB.Max.Y = vertexData[i*3 + 1];
+                }
+                if (vertexData[i*3 + 2] < containerAABB.Min.Z)
+                {
+                    containerAABB.Min.Z = vertexData[i*3 + 2];
+                }
+                if (vertexData[i*3 + 2] > containerAABB.Max.Z)
+                {
+                    containerAABB.Max.Z = vertexData[i*3 + 2];
+                }
+            }
 
             hasNormals = normalData.Count > 0;
             hasUvs = uvData.Count > 0;
@@ -150,6 +179,14 @@ namespace CollisionDetectionSelector
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);//release array
         }
 
+        public AABB BoundingBox
+        {
+            get
+            {
+                return containerAABB;
+            }
+        }
+
         public int NumCollisionTriangles
         {
             get
@@ -159,6 +196,7 @@ namespace CollisionDetectionSelector
         }
         public void DebugRender()
         {
+            containerAABB.Render();
             foreach (Triangle trianlge in collisionMesh)
             {
                 trianlge.Render();
