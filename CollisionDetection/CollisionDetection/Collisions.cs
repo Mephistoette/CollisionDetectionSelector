@@ -1220,5 +1220,31 @@ namespace CollisionDetectionSelector
             // None of the triangles intersected, no intersection
             return false;
         }
+
+        public static bool Raycast(Ray ray, OBJ model, out float t)
+        {
+
+            Ray newRay = new Ray(ray.Position, ray.Normal);
+            if (!Raycast(newRay, model.BoundingSphere, out t))
+            {
+                return false;
+            }
+
+            if(!Raycast(newRay,model.BoundingBox,out t))
+            {
+                return false;
+            }
+
+            for (int i = 0, len = model.Mesh.Length; i < len; ++i)
+            {
+                if (Raycast(newRay,model.Mesh[i],out t))
+                {
+                    return true;
+                }
+            }
+
+            t = -1;
+            return false;
+        }
     }
 }
