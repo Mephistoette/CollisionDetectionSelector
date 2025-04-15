@@ -8,6 +8,7 @@ using CollisionDetectionSelector.Primitives;
 using System.ComponentModel.Design;
 using OpenTK.Graphics.OpenGL;
 using static System.Net.Mime.MediaTypeNames;
+using CollisionDetectionSelector.Samples;
 
 namespace CollisionDetectionSelector
 {
@@ -204,7 +205,7 @@ namespace CollisionDetectionSelector
             float r = e[0] * Math.Abs(plane.Normal.X) + e[1] * Math.Abs(plane.Normal.Y) + e[2] * Math.Abs(plane.Normal.Z);
 
             // Compute distance of box center from plane
-            float s = Vector3.Dot(plane.Normal,c.Position) - plane.Distance;
+            float s = Vector3.Dot(plane.Normal, c.Position) - plane.Distance;
 
             // Intersection occurs when distance s falls within [-r,+r] interval
             return Math.Abs(s) <= r;
@@ -284,13 +285,13 @@ namespace CollisionDetectionSelector
         {
             float tNear = float.MinValue;
             float tFar = float.MaxValue;
-            for(int i = 0; i<3;++i)
+            for (int i = 0; i < 3; ++i)
             {
-                if(i==0)
+                if (i == 0)
                 {
-                    if(Math.Abs(ray.Normal.X)<0.00001f)
+                    if (Math.Abs(ray.Normal.X) < 0.00001f)
                     {
-                        if(ray.Position.X<aabb.Min.X||ray.Position.X>aabb.Max.X)
+                        if (ray.Position.X < aabb.Min.X || ray.Position.X > aabb.Max.X)
                         {
                             t = -1;
                             return false;
@@ -304,29 +305,29 @@ namespace CollisionDetectionSelector
                     }
                 }
 
-                else if(i==1)
+                else if (i == 1)
                 {
-                     if(Math.Abs(ray.Normal.Y)<0.00001f)
-                     {
-                        if(ray.Position.Y<aabb.Min.Y||ray.Position.Y>aabb.Max.Y)
+                    if (Math.Abs(ray.Normal.Y) < 0.00001f)
+                    {
+                        if (ray.Position.Y < aabb.Min.Y || ray.Position.Y > aabb.Max.Y)
                         {
                             t = -1;
                             return false;
                         }
                         continue;
-                     }
-                     else
+                    }
+                    else
                     {
                         tNear = Math.Max(tNear, Math.Min((aabb.Min.Y - ray.Position.Y) / ray.Normal.Y, (aabb.Max.Y - ray.Position.Y) / ray.Normal.Y));
                         tFar = Math.Min(tFar, Math.Max((aabb.Min.Y - ray.Position.Y) / ray.Normal.Y, (aabb.Max.Y - ray.Position.Y) / ray.Normal.Y));
                     }
                 }
 
-                else if(i==2)
+                else if (i == 2)
                 {
-                    if(Math.Abs(ray.Normal.Z)<0.00001f)
+                    if (Math.Abs(ray.Normal.Z) < 0.00001f)
                     {
-                        if(ray.Position.Z<aabb.Min.Z||ray.Position.Z>aabb.Max.Z)
+                        if (ray.Position.Z < aabb.Min.Z || ray.Position.Z > aabb.Max.Z)
                         {
                             t = -1;
                             return false;
@@ -346,7 +347,7 @@ namespace CollisionDetectionSelector
                 else t = tFar;
                 return true;
             }
-           
+
             t = -1;
             return false;
         }
@@ -375,19 +376,19 @@ namespace CollisionDetectionSelector
         // TODO: Implement ONLY THIS ONE method:
         public static bool Raycast(Ray ray, Plane plane, out float t)
         {
-            float nd = Vector3.Dot(ray.Normal,plane.Normal);
+            float nd = Vector3.Dot(ray.Normal, plane.Normal);
             float pn = Vector3.Dot(ray.Position.Position, plane.Normal);
 
-            if(Math.Abs(nd)<0.00001f)
+            if (Math.Abs(nd) < 0.00001f)
             {
                 t = -1;
                 return false;
             }
 
             t = (plane.Distance - pn) / nd;
-            if(t<0.00001f)
+            if (t < 0.00001f)
             {
-                t = -1; 
+                t = -1;
                 return false;
             }
 
@@ -512,7 +513,7 @@ namespace CollisionDetectionSelector
         public static bool PointInTriangle(Triangle triangle, Point point)
         {
             //First find the point on the plane containing the triangle
-            Plane plane = new Plane(triangle.p0,triangle.p1,triangle.p2);
+            Plane plane = new Plane(triangle.p0, triangle.p1, triangle.p2);
             if (!PointOnPlane(point, plane)) return false;
             //Point closestPointOnPlane = ClosestPoint(plane, point);
             //if(closestPointOnPlane!=point) return false;
@@ -554,16 +555,16 @@ namespace CollisionDetectionSelector
 
             float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
             float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
-            if (0<=u&&0<=v&&u+v<=1) return true;
+            if (0 <= u && 0 <= v && u + v <= 1) return true;
             return false;
         }
 
         public static Point ClosestPoint(Triangle triangle, Point point)
         {
             //Firstly find the plane containing the triangle
-            Plane plane = new Plane(triangle.p0,triangle.p1,triangle.p2);
+            Plane plane = new Plane(triangle.p0, triangle.p1, triangle.p2);
             Point closestPointOnPlane = ClosestPoint(plane, point);
-            if(PointInTriangle(triangle,closestPointOnPlane)) return closestPointOnPlane;
+            if (PointInTriangle(triangle, closestPointOnPlane)) return closestPointOnPlane;
 
             Line ab = new Line(triangle.p0, triangle.p1);
             Line ac = new Line(triangle.p0, triangle.p2);
@@ -574,7 +575,7 @@ namespace CollisionDetectionSelector
             Point closestPoint3 = ClosestPoint(bc, closestPointOnPlane);
 
             Vector3 distance1 = closestPoint1.ToVector() - point.ToVector();
-            Vector3 distance2 = closestPoint2.ToVector() - point.ToVector();   
+            Vector3 distance2 = closestPoint2.ToVector() - point.ToVector();
             Vector3 distance3 = closestPoint3.ToVector() - point.ToVector();
 
             float d1 = distance1.LengthSquared();
@@ -582,7 +583,7 @@ namespace CollisionDetectionSelector
             float d3 = distance3.LengthSquared();
 
             if (d1 <= d2 && d1 <= d3) return closestPoint1;
-            else if(d2 <= d3 && d2 <= d1) return closestPoint2;
+            else if (d2 <= d3 && d2 <= d1) return closestPoint2;
             else return closestPoint3;
         }
 
@@ -591,7 +592,7 @@ namespace CollisionDetectionSelector
         {
             Point point = ClosestPoint(triangle, sphere.Position);
             Vector3 distance = sphere.Position.ToVector() - point.ToVector();
-            return  distance.LengthSquared()<sphere.Radius*sphere.Radius;
+            return distance.LengthSquared() < sphere.Radius * sphere.Radius;
         }
 
         // This is just a conveniance function
@@ -839,8 +840,8 @@ namespace CollisionDetectionSelector
             float p2 = Vector3.Dot(triangle.p2.ToVector(), plane.Normal) - plane.Distance;
 
             float epislon = 0.00001f;
-            if(p0>epislon&&p1>epislon&&p2>epislon) return false;
-            else if(p0<-epislon&&p1<-epislon&&p2<-epislon) return false;
+            if (p0 > epislon && p1 > epislon && p2 > epislon) return false;
+            else if (p0 < -epislon && p1 < -epislon && p2 < -epislon) return false;
 
             return true;
         }
@@ -858,7 +859,7 @@ namespace CollisionDetectionSelector
             float p1 = Vector3.Dot(triangle.p1.ToVector(), axis);
             float p2 = Vector3.Dot(triangle.p2.ToVector(), axis);
 
-            return new Vector2(Math.Min(Math.Min(p0,p1),p2),Math.Max(Math.Max(p0,p1),p2));
+            return new Vector2(Math.Min(Math.Min(p0, p1), p2), Math.Max(Math.Max(p0, p1), p2));
         }
 
         private static bool TestAxis(Triangle triangle1, Triangle triangle2, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
@@ -1017,5 +1018,17 @@ namespace CollisionDetectionSelector
             return result;
         }
 
+
+        public static bool LineTest(Line line, Triangle triangle, out Point result)
+        {
+            Plane plane = new Plane(triangle.p0, triangle.p1, triangle.p2);
+            if (!LineTest(line, plane, out result))
+            {
+                return false;
+            }
+
+            if (PointInTriangle(triangle, result)) return true;
+            return false;
+        }
     }
 }
