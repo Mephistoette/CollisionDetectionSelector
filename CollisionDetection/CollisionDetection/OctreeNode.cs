@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Math_Implementation;
 using CollisionDetectionSelector.Primitives;
+using OpenTK.Graphics.OpenGL;
 
 namespace CollisionDetectionSelector
 {
@@ -127,6 +128,15 @@ namespace CollisionDetectionSelector
 
         public void DebugRender()
         {
+            if (debugVisited)
+            {
+                GL.Color3(0f, 1f, 0f);
+            }
+            else
+            {
+                GL.Color3(0f, 0f, 1f);
+
+            }
             Bounds.Render();
             if (Children != null)
             {
@@ -134,6 +144,69 @@ namespace CollisionDetectionSelector
                 {
                     node.DebugRender();
                 }
+            }
+        }
+
+        public OBJ Raycast(Ray ray, out float t)
+        {
+            debugVisited = true;
+            // This is NOT a leaf node, see which child can be raycast against!
+            if (Children != null)
+            {
+                foreach (OctreeNode child in Children)
+                {
+                    // Does the ray intersect the AABB of the node in question?
+                    if (Collisions.Raycast(ray, child.Bounds, out t))
+                    {
+                        // If so, recursivley call the raycast method!
+                        OBJ result = child.Raycast(ray, out t);
+                        // If we hit something, return it!
+                        if (result != null)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            }
+            // This IS a leaf node! See if any of the contents are hit by the ray.
+            // If we made it this far, then the Bounds already intersect the ray,
+            // no bounds check for the OctreeNode is needed!
+            else if (Contents != null)
+            {
+                // Loop trough all children
+                foreach (OBJ content in Contents)
+                {
+                    // Return the first child that was hit!
+                    if (Collisions.Raycast(ray, content, out t))
+                    {
+                        return content;
+                    }
+                }
+            }
+
+            t = 0f;
+            return null;
+        }
+
+        protected bool debugVisited = false;
+
+        public void DebugRenderOnlyVisitedNodes()
+        {
+            if (!debugVisited)
+            {
+                return;
+            }
+            if (Children != null)
+            {
+                foreach (OctreeNode node in Children)
+                {
+                    node.DebugRenderOnlyVisitedNodes();
+                }
+            }
+            else
+            {
+                GL.Color3(0f, 1f, 0f);
+                Bounds.Render();
             }
         }
 

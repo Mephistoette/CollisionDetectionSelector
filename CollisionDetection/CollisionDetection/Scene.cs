@@ -11,29 +11,15 @@ namespace CollisionDetectionSelector
 
         public OBJ Raycast(Ray ray, out float t)
         {
-            return RecursiveRaycast(RootObject, ray, out t);
+            //return RecursiveRaycast(RootObject, ray, out t);
+            return Octree.Raycast(ray, out t);
         }
 
         public OBJ Raycast(Ray ray)
         {
             float t = 0.0f;
-            return RecursiveRaycast(RootObject, ray, out t);
-        }
-
-        protected OBJ RecursiveRaycast(OBJ current, Ray ray, out float t)
-        {
-            if(Collisions.Raycast(ray,current,out t))
-            {
-                return current;
-            }
-            if(current.Children!=null)
-            {
-                foreach (OBJ child in current.Children)
-                {
-                    RecursiveRaycast(child, ray, out t);  
-                }
-            }
-            return null;
+            //return RecursiveRaycast(RootObject, ray, out t);
+            return Octree.Raycast(ray, out t);
         }
 
         public OctreeNode Octree = null;
@@ -43,15 +29,15 @@ namespace CollisionDetectionSelector
             Octree = new OctreeNode(new Point(0, 0, 0), octreeSize, null);
             Octree.Split(3);
         }
-
         public void Render()
         {
             RootObject.Render();
-
             GL.Disable(EnableCap.Lighting);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             Octree.DebugRender();
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            /* NEW */
+            Octree.DebugRenderOnlyVisitedNodes();
             GL.Enable(EnableCap.Lighting);
         }
     }
