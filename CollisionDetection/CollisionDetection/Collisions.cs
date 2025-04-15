@@ -12,6 +12,7 @@ using OpenTK.Graphics.OpenGL;
 using static System.Net.Mime.MediaTypeNames;
 using CollisionDetectionSelector.Samples;
 
+
 namespace CollisionDetectionSelector
 {
     internal class Collisions
@@ -1165,6 +1166,51 @@ namespace CollisionDetectionSelector
             for (int i = 0, len = model.Mesh.Length; i < len; ++i)
             {
                 if (Intersects(model.Mesh[i], translatedPlane))
+                {
+                    return true;
+                }
+            }
+
+            // Narrow-phase
+            // None of the triangles intersected, no intersection
+            return false;
+        }
+
+        public static bool Intersects(OBJ model, Triangle triangle)
+        {
+            return Intersects(triangle, model);
+        }
+
+
+        public static bool Intersects(Triangle triangle, OBJ model)
+        {
+            Matrix4 inverseWorldMatrix = Matrix4.Inverse(model.WorldMatrix);
+
+            Vector3 new_p0 = Matrix4.MultiplyPoint(inverseWorldMatrix, triangle.p0.ToVector());
+            Vector3 new_p1 = Matrix4.MultiplyPoint(inverseWorldMatrix, triangle.p1.ToVector());
+            Vector3 new_p2 = Matrix4.MultiplyPoint(inverseWorldMatrix, triangle.p2.ToVector());
+
+            Triangle translatedTriangle = new Triangle(new_p0, new_p1, new_p2);
+
+            // Broad-phase
+            // If the bounding sphere does not intersect, nothing will
+            if (!Intersects(model.BoundingSphere, translatedTriangle))
+            {
+                return false;
+            }
+
+            // Broad-phase
+            // If the bounding box does not intersect, nothing will
+            if (!Intersects(model.BoundingBox, translatedTriangle))
+            {
+                return false;
+            }
+
+            // Narrow-phase
+            // At least one triangle must intersect!
+            for (int i = 0, len = model.Mesh.Length; i < len; ++i)
+            {
+                if (Intersects(model.Mesh[i], translatedTriangle))
                 {
                     return true;
                 }
